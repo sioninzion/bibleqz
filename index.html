@@ -942,21 +942,6 @@
           <button class="step-button" id="nicknameConfirmButton" type="button">확인</button>
         </section>
 
-        <section class="join-step hidden" id="colorStep">
-          <div class="preview" aria-label="캐릭터 미리보기">
-            <div class="preview-name" id="previewName">플레이어</div>
-            <canvas class="preview-sprite" id="previewCanvas" width="128" height="128"></canvas>
-            <div class="preview-hearts" id="previewHearts"></div>
-          </div>
-          <div class="field">
-            캐릭터 색상
-            <div class="color-grid" id="colorGrid"></div>
-          </div>
-          <div class="color-actions">
-            <button class="random-button" id="randomColorButton" type="button">랜덤 색상</button>
-            <button class="go-button" id="goButton" type="button">GO!!</button>
-          </div>
-        </section>
         <div class="status" id="joinStatus"></div>
       </form>
 
@@ -1166,19 +1151,12 @@
     const phoneTitle = document.querySelector(".phone-title");
     const roomStep = document.getElementById("roomStep");
     const nicknameStep = document.getElementById("nicknameStep");
-    const colorStep = document.getElementById("colorStep");
     const roomCodeInput = document.getElementById("roomCodeInput");
     const nicknameInput = document.getElementById("nicknameInput");
     const roomConfirmButton = document.getElementById("roomConfirmButton");
     const nicknameConfirmButton = document.getElementById("nicknameConfirmButton");
-    const colorGrid = document.getElementById("colorGrid");
-    const randomColorButton = document.getElementById("randomColorButton");
-    const goButton = document.getElementById("goButton");
     const joinStatus = document.getElementById("joinStatus");
     const playerControls = document.getElementById("playerControls");
-    const previewName = document.getElementById("previewName");
-    const previewCanvas = document.getElementById("previewCanvas");
-    const previewHearts = document.getElementById("previewHearts");
     const livePreviewName = document.getElementById("livePreviewName");
     const livePreviewHearts = document.getElementById("livePreviewHearts");
     const playerStatus = document.getElementById("playerStatus");
@@ -1190,13 +1168,6 @@
     const params = new URLSearchParams(location.search);
     const isPlayerPage = params.has("player");
     const isScreenPage = params.has("screen") || params.has("room");
-    const colorChoices = [
-      "#ffffff", "#f54242", "#ff8a3d", "#ffd43b", "#9be15d", "#2ed573", "#34d1bf",
-      "#54a0ff", "#5f6cff", "#a66cff", "#ff6bcb", "#ff9ff3", "#c8d6e5", "#8395a7",
-      "#ffeaa7", "#fab1a0", "#ff7675", "#fd79a8", "#e056fd", "#686de0", "#30336b",
-      "#7ed6df", "#22a6b3", "#badc58", "#6ab04c", "#f0932b", "#eb4d4b", "#130f40",
-      "#dff9fb", "#c7ecee", "#95afc0", "#535c68", "#f9ca24", "#be2edd", "#4834d4"
-    ];
     const imageCache = new Map();
     const avatarNodes = new Map();
     const localPlayers = new Map();
@@ -1224,7 +1195,6 @@
     let gameStarted = false;
     let pendingRoomCode = "";
     let pendingNickname = "";
-    let selectedColor = "#ffffff";
     let lastInputSignature = "";
     let firebaseConnectPromise = null;
     let firebaseErrorMessage = "";
@@ -1241,8 +1211,6 @@
       } else {
         showLandingPage();
       }
-
-      await ensureFirebase(30000);
 
       if (isPlayerPage) {
         setupPlayerJoin();
@@ -1281,6 +1249,35 @@
         firebaseErrorMessage = error?.message || String(error);
         return null;
       }
+    }
+
+    async function verifyRoomWrite(room) {
+      if (!firebaseReady || !firebase || !db) return false;
+
+      const testRef = firebase.ref(db, `rooms/${room}/_connectionTest`);
+      try {
+        await firebase.set(testRef, {
+          at: Date.now()
+        });
+        await firebase.remove(testRef);
+        firebaseErrorMessage = "";
+        return true;
+      } catch (error) {
+        console.error(error);
+        firebaseErrorMessage = makeFirebaseErrorMessage(error);
+        return false;
+      }
+    }
+
+    function makeFirebaseErrorMessage(error) {
+      const message = error?.message || String(error);
+      if (/404|not.?found/i.test(message)) {
+        return "Realtime Database 주소가 잘못되었거나 Database가 아직 생성되지 않았습니다.";
+      }
+      if (/permission|denied/i.test(message)) {
+        return "Realtime Database 규칙에서 rooms 읽기/쓰기가 막혀 있습니다.";
+      }
+      return message;
     }
 
     async function ensureFirebase(timeoutMs = 12000) {
@@ -1352,27 +1349,38 @@
     }
 
     async function setupScreen() {
-      await ensureFirebase(30000);
-
       screenRoomCode.textContent = roomCode;
       const playerUrl = makePlayerUrl(roomCode);
       qrImage.src = makeQrUrl(playerUrl);
       roomLink.textContent = playerUrl;
       questionText.textContent = "게임 시작 버튼을 눌러주세요.";
-      roundMessage.textContent = "대기 중";
+      roundMessage.textContent = "서버 연결 중";
+      startGameButton.disabled = true;
       startGameButton.addEventListener("click", startGame);
       resetRoomButton.addEventListener("click", resetRoom);
       requestAnimationFrame(updateScreen);
 
+      await ensureFirebase(30000);
+
       if (!firebaseReady) {
         screenStatus.textContent = firebaseErrorMessage || "Firebase 연결 실패";
         screenStatus.classList.add("warning");
+        roundMessage.textContent = "서버 연결 실패";
         renderPlayerList();
         return;
       }
 
       activeRoomRef = firebase.ref(db, `rooms/${roomCode}`);
       playersRef = firebase.ref(db, `rooms/${roomCode}/players`);
+      const writable = await verifyRoomWrite(roomCode);
+      if (!writable) {
+        screenStatus.textContent = firebaseErrorMessage;
+        screenStatus.classList.add("warning");
+        roundMessage.textContent = "서버 연결 실패";
+        renderPlayerList();
+        return;
+      }
+
       firebase.update(activeRoomRef, {
         code: roomCode,
         updatedAt: Date.now()
@@ -1385,6 +1393,9 @@
       });
 
       screenStatus.textContent = "온라인";
+      screenStatus.classList.remove("warning");
+      roundMessage.textContent = "대기 중";
+      startGameButton.disabled = false;
     }
 
     function startGame() {
@@ -1499,30 +1510,17 @@
     }
 
     function setupPlayerJoin() {
-      if (!firebaseReady) {
-        joinStatus.textContent = "GO를 누르면 서버 연결을 다시 시도합니다.";
-        joinStatus.classList.add("warning");
-      }
-
       joinForm.addEventListener("submit", async (event) => {
         event.preventDefault();
         if (!roomStep.classList.contains("hidden")) {
           confirmRoomCode();
         } else if (!nicknameStep.classList.contains("hidden")) {
-          confirmNickname();
-        } else if (!colorStep.classList.contains("hidden")) {
-          await joinRoom();
+          await confirmNickname();
         }
       });
 
-      buildColorGrid();
       roomConfirmButton.addEventListener("click", confirmRoomCode);
       nicknameConfirmButton.addEventListener("click", confirmNickname);
-      randomColorButton.addEventListener("click", chooseRandomColor);
-      goButton.addEventListener("click", joinRoom);
-
-      paintSprite(previewCanvas, idleFrame, selectedColor);
-      renderHearts(previewHearts, maxLives);
     }
 
     function confirmRoomCode() {
@@ -1539,7 +1537,7 @@
       nicknameInput.focus({ preventScroll: true });
     }
 
-    function confirmNickname() {
+    async function confirmNickname() {
       pendingNickname = sanitizeNickname(nicknameInput.value);
       if (pendingNickname.length < 1 || pendingNickname.length > 8) {
         joinStatus.textContent = "닉네임은 1~8자로 입력해주세요.";
@@ -1547,77 +1545,61 @@
       }
 
       joinStatus.textContent = "";
-      previewName.textContent = pendingNickname;
-      nicknameStep.classList.add("hidden");
-      colorStep.classList.remove("hidden");
-      paintSprite(previewCanvas, idleFrame, selectedColor);
-    }
-
-    function buildColorGrid() {
-      colorGrid.replaceChildren(
-        ...colorChoices.map((color) => {
-          const button = document.createElement("button");
-          button.className = "color-swatch-button";
-          button.type = "button";
-          button.style.setProperty("--swatch", color);
-          button.setAttribute("aria-label", color);
-          button.addEventListener("click", () => selectColor(color));
-          return button;
-        })
-      );
-      selectColor(selectedColor);
-    }
-
-    function selectColor(color) {
-      selectedColor = color;
-      colorGrid.querySelectorAll(".color-swatch-button").forEach((button) => {
-        button.classList.toggle("selected", button.getAttribute("aria-label") === color);
-      });
-      paintSprite(previewCanvas, idleFrame, selectedColor);
-    }
-
-    function chooseRandomColor() {
-      selectColor(colorChoices[Math.floor(Math.random() * colorChoices.length)]);
+      await joinRoom();
     }
 
     async function joinRoom() {
       joinStatus.classList.remove("warning");
       joinStatus.textContent = "서버 연결 중...";
-      goButton.disabled = true;
+      nicknameConfirmButton.disabled = true;
 
       const ready = await ensureFirebase(15000);
-      goButton.disabled = false;
+      nicknameConfirmButton.disabled = false;
 
       if (!ready) {
         joinStatus.textContent = firebaseErrorMessage
           ? `서버 연결 실패: ${firebaseErrorMessage}`
-          : "서버 연결에 실패했습니다. 인터넷 연결 후 GO를 다시 눌러주세요.";
+          : "서버 연결에 실패했습니다. 인터넷 연결 후 확인을 다시 눌러주세요.";
         joinStatus.classList.add("warning");
         return;
       }
 
       roomCode = pendingRoomCode;
       const nickname = pendingNickname;
-      const color = selectedColor;
+      const color = "#ffffff";
 
       if (!roomCode || !nickname) {
         joinStatus.textContent = "입장 정보를 다시 확인해주세요.";
         return;
       }
 
+      const writable = await verifyRoomWrite(roomCode);
+      if (!writable) {
+        joinStatus.textContent = firebaseErrorMessage;
+        joinStatus.classList.add("warning");
+        return;
+      }
+
       playerId = getPlayerId();
       playerRef = firebase.ref(db, `rooms/${roomCode}/players/${playerId}`);
-      await firebase.set(playerRef, {
-        nickname,
-        color,
-        lives: maxLives,
-        keys: makeEmptyKeys(),
-        xRatio: 0.5,
-        yRatio: 0.55,
-        joinedAt: Date.now(),
-        lastSeen: Date.now(),
-        connected: true
-      });
+      try {
+        await firebase.set(playerRef, {
+          nickname,
+          color,
+          lives: maxLives,
+          keys: makeEmptyKeys(),
+          xRatio: 0.5,
+          yRatio: 0.55,
+          joinedAt: Date.now(),
+          lastSeen: Date.now(),
+          connected: true
+        });
+      } catch (error) {
+        firebaseErrorMessage = makeFirebaseErrorMessage(error);
+        joinStatus.textContent = firebaseErrorMessage;
+        joinStatus.classList.add("warning");
+        return;
+      }
 
       try {
         await firebase.onDisconnect(playerRef).remove();
