@@ -40,10 +40,19 @@
       color: var(--text);
       font-family: "DeterminationMonoK2", system-ui, sans-serif;
       letter-spacing: 0;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
 
     body.screen-mode {
       overflow: hidden;
+    }
+
+    img,
+    canvas {
+      -webkit-user-drag: none;
+      user-select: none;
     }
 
     button,
@@ -300,6 +309,37 @@
     .avatar-hearts {
       top: calc(100% - 8px);
       gap: 3px;
+    }
+
+    .speech-bubble {
+      position: absolute;
+      left: calc(100% - 18px);
+      bottom: calc(100% + 18px);
+      display: none;
+      max-width: min(260px, 28vw);
+      padding: 7px 10px 8px;
+      border: 2px solid rgba(255, 255, 255, 0.88);
+      border-radius: 8px;
+      color: #111111;
+      background: #ffffff;
+      font-family: system-ui, sans-serif;
+      font-size: clamp(13px, 1.35vw, 18px);
+      line-height: 1.25;
+      word-break: break-word;
+      box-shadow: 0 4px 0 rgba(0, 0, 0, 0.55);
+    }
+
+    .speech-bubble::after {
+      content: "";
+      position: absolute;
+      left: 12px;
+      bottom: -10px;
+      border-top: 10px solid #ffffff;
+      border-right: 9px solid transparent;
+    }
+
+    .speech-bubble.visible {
+      display: block;
     }
 
     .heart {
@@ -585,6 +625,77 @@
       object-fit: contain;
     }
 
+    .mobile-game-ui {
+      min-height: calc(100vh - 40px);
+      display: grid;
+      grid-template-rows: 15vh auto 1fr;
+      gap: 10px;
+    }
+
+    .player-topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      min-height: 72px;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.46);
+    }
+
+    .live-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: clamp(24px, 7vw, 36px);
+      text-shadow: 0 3px 0 #000000;
+    }
+
+    .chat-panel {
+      display: grid;
+      gap: 8px;
+    }
+
+    .chat-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+    }
+
+    .chat-input {
+      min-height: 44px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 6px;
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 9px 10px;
+      font-family: system-ui, sans-serif;
+      font-size: 17px;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .send-button {
+      min-width: 62px;
+      border-radius: 6px;
+      background: rgba(120, 211, 114, 0.24);
+    }
+
+    .emoji-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 7px;
+    }
+
+    .emoji-button {
+      min-height: 38px;
+      border-radius: 6px;
+      font-family: system-ui, sans-serif;
+      font-size: 20px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
     .color-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -655,12 +766,90 @@
       border-radius: 8px;
       background: rgba(0, 0, 0, 0.5);
       backdrop-filter: blur(8px);
+      touch-action: none;
     }
 
     .console-label {
       color: var(--muted);
       font-size: 17px;
       text-align: center;
+    }
+
+    .joystick {
+      position: relative;
+      width: min(40vh, 220px);
+      max-width: 62vw;
+      aspect-ratio: 1;
+      margin: 0 auto;
+      border: 2px solid rgba(255, 255, 255, 0.22);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(241, 209, 93, 0.18), transparent 32%),
+        rgba(255, 255, 255, 0.07);
+      box-shadow: inset 0 0 0 10px rgba(0, 0, 0, 0.18);
+      touch-action: none;
+    }
+
+    .joystick-knob {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 34%;
+      aspect-ratio: 1;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-radius: 50%;
+      background: rgba(241, 209, 93, 0.32);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .fire-sweep {
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 2;
+      width: 50%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .fire-sweep.right {
+      left: 50%;
+    }
+
+    .fire-sheet {
+      position: absolute;
+      left: 0;
+      bottom: -22vh;
+      display: grid;
+      grid-template-rows: repeat(2, auto);
+      gap: 4px;
+      width: 100%;
+      animation: fireSweepUp 2s ease-out forwards;
+    }
+
+    .fire-row {
+      display: flex;
+      justify-content: space-around;
+      gap: 3px;
+      width: 100%;
+    }
+
+    .fire-row img {
+      width: clamp(24px, 3.2vw, 44px);
+      height: clamp(24px, 3.2vw, 44px);
+      object-fit: contain;
+      image-rendering: pixelated;
+    }
+
+    @keyframes fireSweepUp {
+      from {
+        transform: translateY(0);
+      }
+      to {
+        transform: translateY(-122vh);
+      }
     }
 
     @media (max-width: 760px) {
@@ -772,24 +961,31 @@
       </form>
 
       <section class="player-controls hidden" id="playerControls">
-        <div class="preview" aria-label="내 캐릭터">
-          <div class="preview-name" id="livePreviewName">플레이어</div>
-          <canvas class="preview-sprite" id="livePreviewCanvas" width="128" height="128"></canvas>
-          <div class="preview-hearts" id="livePreviewHearts"></div>
-        </div>
+        <div class="mobile-game-ui">
+          <header class="player-topbar">
+            <div class="live-name" id="livePreviewName">플레이어</div>
+            <div class="preview-hearts" id="livePreviewHearts"></div>
+          </header>
 
-        <div class="mobile-console">
-          <div class="console-label">이동 콘솔</div>
-          <div class="pad" id="movePad" aria-label="이동 패드">
-            <button class="pad-button" data-keys="w a" type="button">↖</button>
-            <button class="pad-button" data-keys="w" type="button">↑</button>
-            <button class="pad-button" data-keys="w d" type="button">↗</button>
-            <button class="pad-button" data-keys="a" type="button">←</button>
-            <button class="pad-button" data-center="true" type="button">•</button>
-            <button class="pad-button" data-keys="d" type="button">→</button>
-            <button class="pad-button" data-keys="s a" type="button">↙</button>
-            <button class="pad-button" data-keys="s" type="button">↓</button>
-            <button class="pad-button" data-keys="s d" type="button">↘</button>
+          <section class="chat-panel">
+            <div class="chat-row">
+              <input class="chat-input" id="chatInput" maxlength="20" autocomplete="off" placeholder="최대 20자">
+              <button class="send-button" id="chatSendButton" type="button">입력</button>
+            </div>
+            <div class="emoji-row" id="emojiRow">
+              <button class="emoji-button" type="button" data-emoji="😊">😊</button>
+              <button class="emoji-button" type="button" data-emoji="😢">😢</button>
+              <button class="emoji-button" type="button" data-emoji="😜">😜</button>
+              <button class="emoji-button" type="button" data-emoji="😡">😡</button>
+              <button class="emoji-button" type="button" data-emoji="🤔">🤔</button>
+            </div>
+          </section>
+
+          <div class="mobile-console">
+            <div class="console-label">이동 콘솔</div>
+            <div class="joystick" id="joystick" aria-label="원형 이동 콘솔">
+              <div class="joystick-knob" id="joystickKnob"></div>
+            </div>
           </div>
         </div>
         <div class="status" id="playerStatus"></div>
@@ -943,9 +1139,14 @@
     const writeInterval = 160;
     const maxLives = 3;
     const answerDuration = 2000;
+    const answerNoticeDuration = 2000;
+    const answerTextDuration = 2000;
+    const answerCheckExtraDuration = 2000;
+    const correctJumpInterval = 200;
     const moveSeconds = 15;
     const heartFull = "fullheart.png";
     const heartEmpty = "emptyheart.png";
+    const fireImage = "fire.png";
     const landingPage = document.getElementById("landingPage");
     const screenPage = document.getElementById("screenPage");
     const playerPage = document.getElementById("playerPage");
@@ -953,6 +1154,7 @@
     const questionText = document.getElementById("questionText");
     const roundMessage = document.getElementById("roundMessage");
     const playersLayer = document.getElementById("playersLayer");
+    const roomPanel = document.querySelector(".room-panel");
     const playerList = document.getElementById("playerList");
     const screenRoomCode = document.getElementById("screenRoomCode");
     const qrImage = document.getElementById("qrImage");
@@ -961,6 +1163,7 @@
     const startGameButton = document.getElementById("startGameButton");
     const resetRoomButton = document.getElementById("resetRoomButton");
     const joinForm = document.getElementById("joinForm");
+    const phoneTitle = document.querySelector(".phone-title");
     const roomStep = document.getElementById("roomStep");
     const nicknameStep = document.getElementById("nicknameStep");
     const colorStep = document.getElementById("colorStep");
@@ -977,10 +1180,13 @@
     const previewCanvas = document.getElementById("previewCanvas");
     const previewHearts = document.getElementById("previewHearts");
     const livePreviewName = document.getElementById("livePreviewName");
-    const livePreviewCanvas = document.getElementById("livePreviewCanvas");
     const livePreviewHearts = document.getElementById("livePreviewHearts");
     const playerStatus = document.getElementById("playerStatus");
-    const movePad = document.getElementById("movePad");
+    const chatInput = document.getElementById("chatInput");
+    const chatSendButton = document.getElementById("chatSendButton");
+    const emojiRow = document.getElementById("emojiRow");
+    const joystick = document.getElementById("joystick");
+    const joystickKnob = document.getElementById("joystickKnob");
     const params = new URLSearchParams(location.search);
     const isPlayerPage = params.has("player");
     const isScreenPage = params.has("screen") || params.has("room");
@@ -1019,8 +1225,11 @@
     let pendingRoomCode = "";
     let pendingNickname = "";
     let selectedColor = "#ffffff";
+    let lastInputSignature = "";
     let firebaseConnectPromise = null;
+    let firebaseErrorMessage = "";
 
+    installInteractionGuards();
     preloadImages();
     boot();
 
@@ -1044,16 +1253,24 @@
 
     async function connectFirebase() {
       if (!firebaseConfig.apiKey || !firebaseConfig.databaseURL || !firebaseConfig.projectId) {
+        firebaseErrorMessage = "Firebase 설정값이 비어 있습니다.";
         return null;
       }
 
       try {
+        await checkDatabaseUrl();
         const appModule = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
         const dbModule = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js");
-        const app = appModule.initializeApp(firebaseConfig);
+        const app = appModule.getApps().length
+          ? appModule.getApp()
+          : appModule.initializeApp(firebaseConfig);
+        const database = dbModule.getDatabase(app);
+        await dbModule.get(dbModule.ref(database, ".info/connected"));
+        firebaseErrorMessage = "";
         return {
-          db: dbModule.getDatabase(app),
+          db: database,
           ref: dbModule.ref,
+          get: dbModule.get,
           set: dbModule.set,
           update: dbModule.update,
           onValue: dbModule.onValue,
@@ -1063,7 +1280,22 @@
         };
       } catch (error) {
         console.error(error);
+        firebaseErrorMessage = error?.message || String(error);
         return null;
+      }
+    }
+
+    async function checkDatabaseUrl() {
+      const url = `${firebaseConfig.databaseURL.replace(/\/$/, "")}/.json?shallow=true`;
+      const response = await fetch(url, { cache: "no-store" });
+
+      if (response.status === 404) {
+        throw new Error("Realtime Database가 없거나 databaseURL이 잘못되었습니다.");
+      }
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => "");
+        throw new Error(`Realtime Database 응답 오류 ${response.status}${text ? `: ${text}` : ""}`);
       }
     }
 
@@ -1095,6 +1327,22 @@
           setTimeout(() => resolve(null), timeoutMs);
         })
       ]);
+    }
+
+    function installInteractionGuards() {
+      document.addEventListener("contextmenu", (event) => event.preventDefault());
+      document.addEventListener("dragstart", (event) => event.preventDefault());
+      document.addEventListener("dblclick", (event) => event.preventDefault(), { passive: false });
+      document.addEventListener("gesturestart", (event) => event.preventDefault(), { passive: false });
+
+      let lastTouchEnd = 0;
+      document.addEventListener("touchend", (event) => {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) {
+          event.preventDefault();
+        }
+        lastTouchEnd = now;
+      }, { passive: false });
     }
 
     function showLandingPage() {
@@ -1160,6 +1408,7 @@
       gameStarted = true;
       startGameButton.disabled = true;
       startGameButton.textContent = "진행 중";
+      roomPanel.classList.add("hidden");
       startQuizLoop();
     }
 
@@ -1201,7 +1450,7 @@
     function showAnswerNotice() {
       movementEnabled = false;
       roundMessage.textContent = "정답 공개";
-      quizTimer = setTimeout(revealAnswer, 500);
+      quizTimer = setTimeout(revealAnswer, answerNoticeDuration);
     }
 
     function revealAnswer() {
@@ -1214,8 +1463,8 @@
         quizTimer = setTimeout(() => {
           roundMessage.textContent = "다음 문제";
           quizTimer = setTimeout(showNextQuestion, 800);
-        }, answerDuration);
-      }, 1000);
+        }, answerDuration + answerCheckExtraDuration);
+      }, answerTextDuration);
     }
 
     function drawQuestion() {
@@ -1237,6 +1486,7 @@
       const half = bounds.width / 2;
       const now = performance.now();
       const updates = {};
+      triggerFireSweep(currentQuestion.answer === "O" ? "right" : "left");
 
       for (const [id, state] of localPlayers) {
         const player = latestPlayers[id];
@@ -1355,7 +1605,9 @@
       goButton.disabled = false;
 
       if (!ready) {
-        joinStatus.textContent = "서버 연결에 실패했습니다. 인터넷 연결 후 GO를 다시 눌러주세요.";
+        joinStatus.textContent = firebaseErrorMessage
+          ? `서버 연결 실패: ${firebaseErrorMessage}`
+          : "서버 연결에 실패했습니다. 인터넷 연결 후 GO를 다시 눌러주세요.";
         joinStatus.classList.add("warning");
         return;
       }
@@ -1390,10 +1642,10 @@
       }
 
       joinForm.classList.add("hidden");
+      phoneTitle.classList.add("hidden");
       playerControls.classList.remove("hidden");
       livePreviewName.textContent = nickname;
       playerStatus.textContent = `방 ${roomCode}`;
-      paintSprite(livePreviewCanvas, idleFrame, color);
       renderHearts(livePreviewHearts, maxLives);
       setupPlayerControls();
 
@@ -1402,7 +1654,6 @@
         if (!player) return;
         livePreviewName.textContent = player.nickname || nickname;
         renderHearts(livePreviewHearts, Number(player.lives ?? maxLives));
-        paintSprite(livePreviewCanvas, idleFrame, player.color || color);
       });
 
       setInterval(() => {
@@ -1412,27 +1663,45 @@
     }
 
     function setupPlayerControls() {
-      movePad.querySelectorAll(".pad-button[data-keys]").forEach((button) => {
-        const keys = button.dataset.keys.split(" ");
+      let joystickPointerId = null;
 
-        button.addEventListener("pointerdown", (event) => {
-          event.preventDefault();
-          button.setPointerCapture(event.pointerId);
-          button.classList.add("active");
-          activePadKeys.clear();
-          keys.forEach((key) => activePadKeys.add(key));
-          writeInput();
+      joystick.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        joystickPointerId = event.pointerId;
+        joystick.setPointerCapture(event.pointerId);
+        updateJoystick(event);
+      });
+
+      joystick.addEventListener("pointermove", (event) => {
+        if (event.pointerId !== joystickPointerId) return;
+        event.preventDefault();
+        updateJoystick(event);
+      });
+
+      const resetJoystick = () => {
+        joystickPointerId = null;
+        activePadKeys.clear();
+        joystickKnob.style.transform = "translate(-50%, -50%)";
+        writeInput();
+      };
+
+      joystick.addEventListener("pointerup", resetJoystick);
+      joystick.addEventListener("pointercancel", resetJoystick);
+      joystick.addEventListener("lostpointercapture", resetJoystick);
+
+      chatSendButton.addEventListener("click", sendChatMessage);
+      chatInput.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter") return;
+        event.preventDefault();
+        sendChatMessage();
+      });
+
+      emojiRow.querySelectorAll(".emoji-button").forEach((button) => {
+        button.addEventListener("click", () => {
+          const next = `${chatInput.value}${button.dataset.emoji || ""}`.slice(0, 20);
+          chatInput.value = next;
+          chatInput.focus({ preventScroll: true });
         });
-
-        const clear = () => {
-          button.classList.remove("active");
-          activePadKeys.clear();
-          writeInput();
-        };
-
-        button.addEventListener("pointerup", clear);
-        button.addEventListener("pointercancel", clear);
-        button.addEventListener("pointerleave", clear);
       });
 
       window.addEventListener("keydown", (event) => {
@@ -1458,11 +1727,51 @@
       });
     }
 
+    function updateJoystick(event) {
+      const rect = joystick.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const maxRadius = rect.width * 0.34;
+      const dx = event.clientX - centerX;
+      const dy = event.clientY - centerY;
+      const distance = Math.hypot(dx, dy);
+      const limited = distance > maxRadius ? maxRadius / distance : 1;
+      const knobX = dx * limited;
+      const knobY = dy * limited;
+
+      joystickKnob.style.transform = `translate(calc(-50% + ${knobX}px), calc(-50% + ${knobY}px))`;
+      activePadKeys.clear();
+
+      const threshold = rect.width * 0.11;
+      if (Math.abs(dx) > threshold) activePadKeys.add(dx > 0 ? "d" : "a");
+      if (Math.abs(dy) > threshold) activePadKeys.add(dy > 0 ? "s" : "w");
+
+      writeInput();
+    }
+
+    async function sendChatMessage() {
+      if (!playerRef || !firebaseReady) return;
+      const text = chatInput.value.trim().slice(0, 20);
+      if (!text) return;
+
+      chatInput.value = "";
+      await firebase.update(playerRef, {
+        message: {
+          text,
+          createdAt: Date.now(),
+          until: Date.now() + 4200
+        }
+      });
+    }
+
     async function writeInput() {
       if (!playerRef || !firebaseReady) return;
       const keys = makeEmptyKeys();
       for (const key of heldKeyboardKeys) keys[key] = true;
       for (const key of activePadKeys) keys[key] = true;
+      const signature = allKeys.map((key) => (keys[key] ? "1" : "0")).join("");
+      if (signature === lastInputSignature) return;
+      lastInputSignature = signature;
       await firebase.update(playerRef, { keys, lastSeen: Date.now(), connected: true });
     }
 
@@ -1551,10 +1860,14 @@
       hearts.className = "avatar-hearts";
       root.append(hearts);
 
+      const bubble = document.createElement("div");
+      bubble.className = "speech-bubble";
+      root.append(bubble);
+
       playersLayer.append(root);
       name.textContent = player.nickname || "플레이어";
       renderHearts(hearts, Number(player.lives ?? maxLives));
-      return { root, name, canvas, hearts };
+      return { root, name, canvas, hearts, bubble };
     }
 
     function renderAvatar(id, player, state, now) {
@@ -1572,6 +1885,7 @@
       node.root.style.transform = `translate3d(${state.x + effect.x}px, ${state.y + bob + effect.y}px, 0)`;
       node.name.textContent = player.nickname || "플레이어";
       renderHearts(node.hearts, Number(player.lives ?? maxLives));
+      renderSpeechBubble(node.bubble, player.message);
 
       if (state.lastFrame !== frame || state.lastColor !== color) {
         state.lastFrame = frame;
@@ -1588,7 +1902,7 @@
 
       const elapsed = now - state.effectStartedAt;
       if (state.effect === "correct") {
-        return { x: 0, y: Math.floor(elapsed / 400) % 2 === 0 ? -6 : 0 };
+        return { x: 0, y: Math.floor(elapsed / correctJumpInterval) % 2 === 0 ? -6 : 0 };
       }
 
       if (state.effect === "wrong") {
@@ -1596,6 +1910,42 @@
       }
 
       return { x: 0, y: 0 };
+    }
+
+    function renderSpeechBubble(bubble, message) {
+      const text = String(message?.text || "").trim();
+      if (!text || Number(message?.until || 0) < Date.now()) {
+        bubble.classList.remove("visible");
+        bubble.textContent = "";
+        return;
+      }
+
+      bubble.textContent = text.slice(0, 20);
+      bubble.classList.add("visible");
+    }
+
+    function triggerFireSweep(side) {
+      const sweep = document.createElement("div");
+      sweep.className = `fire-sweep ${side === "right" ? "right" : "left"}`;
+      const sheet = document.createElement("div");
+      sheet.className = "fire-sheet";
+
+      for (let rowIndex = 0; rowIndex < 2; rowIndex += 1) {
+        const row = document.createElement("div");
+        row.className = "fire-row";
+        for (let i = 0; i < 12; i += 1) {
+          const fire = document.createElement("img");
+          fire.src = fireImage;
+          fire.alt = "";
+          fire.draggable = false;
+          row.append(fire);
+        }
+        sheet.append(row);
+      }
+
+      sweep.append(sheet);
+      stage.append(sweep);
+      setTimeout(() => sweep.remove(), 2200);
     }
 
     function renderPlayerList() {
@@ -1640,6 +1990,16 @@
     }
 
     async function resetRoom() {
+      gameStarted = false;
+      movementEnabled = false;
+      clearTimeout(quizTimer);
+      clearInterval(countdownTimer);
+      startGameButton.disabled = false;
+      startGameButton.textContent = "게임 시작";
+      roomPanel.classList.remove("hidden");
+      questionText.textContent = "게임 시작 버튼을 눌러주세요.";
+      roundMessage.textContent = "대기 중";
+
       if (!firebaseReady) return;
       const updates = {};
       Object.keys(latestPlayers).forEach((id) => {
@@ -1749,7 +2109,7 @@
     }
 
     function preloadImages() {
-      const sources = new Set([idleFrame, heartFull, heartEmpty, ...Object.values(walkFrames).flat()]);
+      const sources = new Set([idleFrame, heartFull, heartEmpty, fireImage, ...Object.values(walkFrames).flat()]);
       sources.forEach((src) => loadImage(src));
     }
 
