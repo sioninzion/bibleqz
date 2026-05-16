@@ -16,8 +16,8 @@
       --floor: #141512;
       --floor-line: rgba(255, 255, 255, 0.06);
       --edge: rgba(255, 255, 255, 0.14);
-      --panel: rgba(10, 12, 10, 0.86);
-      --panel-strong: rgba(0, 0, 0, 0.72);
+      --panel: rgba(10, 12, 10, 0.58);
+      --panel-strong: rgba(0, 0, 0, 0.48);
       --text: #ffffff;
       --muted: #c8cec2;
       --accent: #f1d15d;
@@ -105,7 +105,7 @@
 
     .landing-title {
       margin: 0 0 12px;
-      font-size: clamp(42px, 9vw, 82px);
+      font-size: clamp(30px, 6.5vw, 60px);
       font-weight: 400;
       line-height: 1;
       text-shadow: 0 5px 0 #000000;
@@ -115,7 +115,7 @@
       margin: 0 0 22px;
       color: var(--muted);
       font-family: system-ui, sans-serif;
-      font-size: 16px;
+      font-size: 13px;
       line-height: 1.45;
     }
 
@@ -162,7 +162,7 @@
       content: "";
       position: absolute;
       inset: 0 50% 0 0;
-      background: linear-gradient(90deg, rgba(72, 155, 255, 0.16), rgba(72, 155, 255, 0.02));
+      background: radial-gradient(ellipse at left center, rgba(60, 130, 255, 0.46) 0%, rgba(60, 130, 255, 0.16) 42%, transparent 72%);
       pointer-events: none;
     }
 
@@ -170,7 +170,7 @@
       content: "";
       position: absolute;
       inset: 0 0 0 50%;
-      background: linear-gradient(90deg, rgba(255, 210, 78, 0.02), rgba(255, 210, 78, 0.16));
+      background: radial-gradient(ellipse at right center, rgba(240, 70, 70, 0.46) 0%, rgba(240, 70, 70, 0.16) 42%, transparent 72%);
       pointer-events: none;
     }
 
@@ -218,7 +218,7 @@
       z-index: 4;
       margin: 0;
       color: #ffffff;
-      font-size: clamp(34px, 5.4vw, 78px);
+      font-size: clamp(22px, 3.8vw, 50px);
       font-weight: 400;
       line-height: 1;
       text-align: center;
@@ -247,7 +247,7 @@
       padding: 8px 16px 10px;
       border: 1px solid rgba(255, 255, 255, 0.16);
       border-radius: 6px;
-      background: rgba(0, 0, 0, 0.58);
+      background: rgba(0, 0, 0, 0.35);
       text-align: center;
       text-shadow: 0 3px 0 #000000;
     }
@@ -255,13 +255,13 @@
     .question-text {
       max-width: 100%;
       color: #ffffff;
-      font-size: clamp(20px, 3vw, 42px);
+      font-size: clamp(16px, 2.4vw, 34px);
       line-height: 1.14;
     }
 
     .round-message {
       color: var(--accent);
-      font-size: clamp(18px, 2.4vw, 34px);
+      font-size: clamp(14px, 1.8vw, 26px);
       line-height: 1;
     }
 
@@ -542,7 +542,7 @@
     }
 
     .player-controls {
-      padding-bottom: 280px;
+      padding-bottom: 0;
     }
 
     .join-step {
@@ -637,11 +637,26 @@
       grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
       gap: 12px;
-      min-height: 72px;
-      padding: 12px;
+      min-height: 60px;
+      padding: 10px 14px;
       border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 8px;
+      border-radius: 10px;
       background: rgba(0, 0, 0, 0.46);
+      flex-shrink: 0;
+    }
+
+    .topbar-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 3px;
+    }
+
+    .topbar-status {
+      font-family: system-ui, sans-serif;
+      font-size: 11px;
+      color: var(--muted);
+      opacity: 0.75;
     }
 
     .live-name {
@@ -777,8 +792,8 @@
 
     .joystick {
       position: relative;
-      width: min(40vh, 220px);
-      max-width: 62vw;
+      width: min(64vw, 64vh);
+      max-width: 320px;
       aspect-ratio: 1;
       margin: 0 auto;
       border: 2px solid rgba(255, 255, 255, 0.22);
@@ -837,8 +852,8 @@
     }
 
     .fire-row img {
-      width: clamp(24px, 3.2vw, 44px);
-      height: clamp(24px, 3.2vw, 44px);
+      width: clamp(64px, 9.5vw, 140px);
+      height: clamp(64px, 9.5vw, 140px);
       object-fit: contain;
       image-rendering: pixelated;
     }
@@ -850,6 +865,105 @@
       to {
         transform: translateY(-122vh);
       }
+    }
+
+    /* ── 게임 진입 시 플레이어 페이지 풀스크린 ── */
+    .player-page.game-active {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      background: #0c0e0b;
+      overflow: hidden;
+    }
+
+    .player-page.game-active .phone-panel {
+      flex: 1;
+      width: 100%;
+      max-width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #playerControls {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 12px 14px 16px;
+      overflow: hidden;
+    }
+
+    /* ── 탭 바 ── */
+    .mobile-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .mobile-tab {
+      padding: 11px 8px;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 17px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      cursor: pointer;
+    }
+
+    .mobile-tab.active {
+      color: var(--accent);
+      background: rgba(241, 209, 93, 0.18);
+      border-color: rgba(241, 209, 93, 0.44);
+    }
+
+    /* ── 탭 패널 공통 ── */
+    .tab-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .chat-tab-panel {
+      justify-content: flex-end;
+    }
+
+    .move-tab-panel {
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── 채팅 입력 구성 ── */
+    .chat-compose {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .chat-feedback {
+      min-height: 20px;
+      color: var(--green);
+      font-family: system-ui, sans-serif;
+      font-size: 13px;
+      text-align: center;
+      flex-shrink: 0;
     }
 
     @media (max-width: 760px) {
@@ -915,6 +1029,7 @@
           <span>플레이어</span>
           <button class="start-button" id="startGameButton" type="button">게임 시작</button>
           <button class="reset-button" id="resetRoomButton" type="button">초기화</button>
+          <button class="reset-button" id="fullscreenButton" type="button" title="전체화면 (F키)">전체화면</button>
         </div>
         <div class="player-list" id="playerList"></div>
       </aside>
@@ -946,34 +1061,39 @@
       </form>
 
       <section class="player-controls hidden" id="playerControls">
-        <div class="mobile-game-ui">
-          <header class="player-topbar">
-            <div class="live-name" id="livePreviewName">플레이어</div>
+        <header class="player-topbar">
+          <div class="live-name" id="livePreviewName">플레이어</div>
+          <div class="topbar-right">
             <div class="preview-hearts" id="livePreviewHearts"></div>
-          </header>
-
-          <section class="chat-panel">
-            <div class="chat-row">
-              <input class="chat-input" id="chatInput" maxlength="20" autocomplete="off" placeholder="최대 20자">
-              <button class="send-button" id="chatSendButton" type="button">입력</button>
-            </div>
-            <div class="emoji-row" id="emojiRow">
-              <button class="emoji-button" type="button" data-emoji="😊">😊</button>
-              <button class="emoji-button" type="button" data-emoji="😢">😢</button>
-              <button class="emoji-button" type="button" data-emoji="😜">😜</button>
-              <button class="emoji-button" type="button" data-emoji="😡">😡</button>
-              <button class="emoji-button" type="button" data-emoji="🤔">🤔</button>
-            </div>
-          </section>
-
-          <div class="mobile-console">
-            <div class="console-label">이동 콘솔</div>
-            <div class="joystick" id="joystick" aria-label="원형 이동 콘솔">
-              <div class="joystick-knob" id="joystickKnob"></div>
-            </div>
+            <div class="topbar-status" id="playerStatus"></div>
           </div>
+        </header>
+
+        <div class="mobile-tabs">
+          <button class="mobile-tab" id="tabChat" type="button">💬 채팅</button>
+          <button class="mobile-tab active" id="tabMove" type="button">🕹️ 이동</button>
         </div>
-        <div class="status" id="playerStatus"></div>
+
+        <section class="tab-panel chat-tab-panel hidden" id="chatPanel">
+          <div class="emoji-row" id="emojiRow">
+            <button class="emoji-button" type="button" data-emoji="😊">😊</button>
+            <button class="emoji-button" type="button" data-emoji="😢">😢</button>
+            <button class="emoji-button" type="button" data-emoji="😜">😜</button>
+            <button class="emoji-button" type="button" data-emoji="😡">😡</button>
+            <button class="emoji-button" type="button" data-emoji="🤔">🤔</button>
+          </div>
+          <div class="chat-compose">
+            <input class="chat-input" id="chatInput" maxlength="20" autocomplete="off" inputmode="text" placeholder="최대 20자">
+            <button class="send-button" id="chatSendButton" type="button">전송</button>
+          </div>
+          <div class="chat-feedback" id="chatFeedback"></div>
+        </section>
+
+        <section class="tab-panel move-tab-panel" id="movePanel">
+          <div class="joystick" id="joystick" aria-label="원형 이동 콘솔">
+            <div class="joystick-knob" id="joystickKnob"></div>
+          </div>
+        </section>
       </section>
     </main>
   </section>
@@ -1147,7 +1267,9 @@
     const screenStatus = document.getElementById("screenStatus");
     const startGameButton = document.getElementById("startGameButton");
     const resetRoomButton = document.getElementById("resetRoomButton");
+    const fullscreenButton = document.getElementById("fullscreenButton");
     const joinForm = document.getElementById("joinForm");
+    const screenTitle = document.querySelector(".title");
     const phoneTitle = document.querySelector(".phone-title");
     const roomStep = document.getElementById("roomStep");
     const nicknameStep = document.getElementById("nicknameStep");
@@ -1358,6 +1480,13 @@
       startGameButton.disabled = true;
       startGameButton.addEventListener("click", startGame);
       resetRoomButton.addEventListener("click", resetRoom);
+      fullscreenButton.addEventListener("click", toggleFullscreen);
+      document.addEventListener("fullscreenchange", updateFullscreenButton);
+      document.addEventListener("keydown", (event) => {
+        if (event.key.toLowerCase() === "f" && !event.target.matches("input, textarea")) {
+          toggleFullscreen();
+        }
+      });
       requestAnimationFrame(updateScreen);
 
       await ensureFirebase(30000);
@@ -1401,6 +1530,7 @@
     function startGame() {
       if (gameStarted) return;
       gameStarted = true;
+      screenTitle.textContent = "성경 ox 퀴즈";
       startGameButton.disabled = true;
       startGameButton.textContent = "진행 중";
       roomPanel.classList.add("hidden");
@@ -1456,6 +1586,7 @@
         roundMessage.textContent = "결과 확인";
 
         quizTimer = setTimeout(() => {
+          if (checkGameOver()) return;
           roundMessage.textContent = "다음 문제";
           quizTimer = setTimeout(showNextQuestion, 800);
         }, answerDuration + answerCheckExtraDuration);
@@ -1507,6 +1638,36 @@
       }
 
       renderPlayerList();
+    }
+
+    function checkGameOver() {
+      const playerEntries = Object.entries(latestPlayers);
+      if (playerEntries.length < 2) return false;
+
+      const alivePlayers = playerEntries.filter(([, p]) => Number(p.lives ?? maxLives) > 0);
+
+      if (alivePlayers.length === 1) {
+        endGame(alivePlayers[0][1].nickname || "플레이어");
+        return true;
+      }
+      if (alivePlayers.length === 0) {
+        endGame(null);
+        return true;
+      }
+      return false;
+    }
+
+    function endGame(winnerName) {
+      clearTimeout(quizTimer);
+      clearInterval(countdownTimer);
+      movementEnabled = false;
+      gameStarted = false;
+      screenTitle.textContent = "게임 종료!";
+      questionText.textContent = winnerName ? `우승자: ${winnerName}` : "모든 플레이어 탈락";
+      roundMessage.textContent = winnerName ? "축하합니다!" : "무승부";
+      startGameButton.disabled = false;
+      startGameButton.textContent = "다시 시작";
+      roomPanel.classList.remove("hidden");
     }
 
     function setupPlayerJoin() {
@@ -1610,6 +1771,7 @@
       joinForm.classList.add("hidden");
       phoneTitle.classList.add("hidden");
       playerControls.classList.remove("hidden");
+      playerPage.classList.add("game-active");
       livePreviewName.textContent = nickname;
       playerStatus.textContent = `방 ${roomCode}`;
       renderHearts(livePreviewHearts, maxLives);
@@ -1629,6 +1791,28 @@
     }
 
     function setupPlayerControls() {
+      const tabChat = document.getElementById("tabChat");
+      const tabMove = document.getElementById("tabMove");
+      const chatPanel = document.getElementById("chatPanel");
+      const movePanel = document.getElementById("movePanel");
+
+      tabChat.addEventListener("click", () => {
+        tabChat.classList.add("active");
+        tabMove.classList.remove("active");
+        chatPanel.classList.remove("hidden");
+        movePanel.classList.add("hidden");
+        activePadKeys.clear();
+        writeInput();
+        setTimeout(() => chatInput.focus({ preventScroll: true }), 60);
+      });
+
+      tabMove.addEventListener("click", () => {
+        tabMove.classList.add("active");
+        tabChat.classList.remove("active");
+        movePanel.classList.remove("hidden");
+        chatPanel.classList.add("hidden");
+      });
+
       let joystickPointerId = null;
 
       joystick.addEventListener("pointerdown", (event) => {
@@ -1721,13 +1905,21 @@
       if (!text) return;
 
       chatInput.value = "";
+      const feedbackEl = document.getElementById("chatFeedback");
+      if (feedbackEl) feedbackEl.textContent = "전송 중...";
+
       await firebase.update(playerRef, {
         message: {
           text,
           createdAt: Date.now(),
-          until: Date.now() + 4200
+          until: Date.now() + 6000
         }
       });
+
+      if (feedbackEl) {
+        feedbackEl.textContent = "말풍선 전송됨 ✓";
+        setTimeout(() => { if (feedbackEl) feedbackEl.textContent = ""; }, 2200);
+      }
     }
 
     async function writeInput() {
@@ -1960,6 +2152,7 @@
       movementEnabled = false;
       clearTimeout(quizTimer);
       clearInterval(countdownTimer);
+      screenTitle.textContent = "성경 ox 퀴즈";
       startGameButton.disabled = false;
       startGameButton.textContent = "게임 시작";
       roomPanel.classList.remove("hidden");
@@ -1976,6 +2169,21 @@
       await firebase.update(firebase.ref(db), updates);
       localPlayers.clear();
       syncLocalPlayers();
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(console.warn);
+      } else {
+        document.exitFullscreen().catch(console.warn);
+      }
+    }
+
+    function updateFullscreenButton() {
+      if (!fullscreenButton) return;
+      const isFull = Boolean(document.fullscreenElement);
+      fullscreenButton.textContent = isFull ? "창 모드" : "전체화면";
+      fullscreenButton.title = isFull ? "창 모드로 전환 (F키)" : "전체화면으로 전환 (F키)";
     }
 
     function writePlayerPositions(bounds, spriteSize) {
