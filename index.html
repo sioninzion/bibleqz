@@ -1019,6 +1019,7 @@
     let pendingRoomCode = "";
     let pendingNickname = "";
     let selectedColor = "#ffffff";
+    let firebaseConnectPromise = null;
 
     preloadImages();
     boot();
@@ -1032,9 +1033,7 @@
         showLandingPage();
       }
 
-      firebase = await withTimeout(connectFirebase(), 3500);
-      firebaseReady = Boolean(firebase);
-      db = firebase?.db || null;
+      await ensureFirebase(8000);
 
       if (isPlayerPage) {
         setupPlayerJoin();
@@ -1066,6 +1065,27 @@
         console.error(error);
         return null;
       }
+    }
+
+    async function ensureFirebase(timeoutMs = 12000) {
+      if (firebaseReady && firebase && db) {
+        return true;
+      }
+
+      if (!firebaseConnectPromise) {
+        firebaseConnectPromise = connectFirebase();
+      }
+
+      const result = await withTimeout(firebaseConnectPromise, timeoutMs);
+      if (!result) {
+        firebaseConnectPromise = null;
+        return false;
+      }
+
+      firebase = result;
+      db = firebase.db;
+      firebaseReady = true;
+      return true;
     }
 
     function withTimeout(promise, timeoutMs) {
@@ -1100,6 +1120,8 @@
     }
 
     async function setupScreen() {
+      await ensureFirebase(12000);
+
       screenRoomCode.textContent = roomCode;
       const playerUrl = makePlayerUrl(roomCode);
       qrImage.src = makeQrUrl(playerUrl);
@@ -1244,7 +1266,7 @@
 
     function setupPlayerJoin() {
       if (!firebaseReady) {
-        joinStatus.textContent = "Firebase 설정을 먼저 넣어주세요.";
+        joinStatus.textContent = "GO를 누르면 서버 연결을 다시 시도합니다.";
         joinStatus.classList.add("warning");
       }
 
@@ -1325,8 +1347,15 @@
     }
 
     async function joinRoom() {
-      if (!firebaseReady) {
-        joinStatus.textContent = "Firebase 설정이 비어 있습니다.";
+      joinStatus.classList.remove("warning");
+      joinStatus.textContent = "서버 연결 중...";
+      goButton.disabled = true;
+
+      const ready = await ensureFirebase(15000);
+      goButton.disabled = false;
+
+      if (!ready) {
+        joinStatus.textContent = "서버 연결에 실패했습니다. 인터넷 연결 후 GO를 다시 눌러주세요.";
         joinStatus.classList.add("warning");
         return;
       }
