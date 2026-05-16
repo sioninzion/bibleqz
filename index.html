@@ -316,8 +316,8 @@
       left: calc(100% - 18px);
       bottom: calc(100% + 18px);
       display: none;
-      max-width: min(260px, 28vw);
-      padding: 7px 10px 8px;
+      max-width: min(480px, 48vw);
+      padding: 7px 12px 8px;
       border: 2px solid rgba(255, 255, 255, 0.88);
       border-radius: 8px;
       color: #111111;
@@ -325,7 +325,9 @@
       font-family: system-ui, sans-serif;
       font-size: clamp(13px, 1.35vw, 18px);
       line-height: 1.25;
-      word-break: break-word;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
       box-shadow: 0 4px 0 rgba(0, 0, 0, 0.55);
     }
 
@@ -852,8 +854,8 @@
     }
 
     .fire-row img {
-      width: clamp(64px, 9.5vw, 140px);
-      height: clamp(64px, 9.5vw, 140px);
+      width: clamp(192px, 28.5vw, 420px);
+      height: clamp(192px, 28.5vw, 420px);
       object-fit: contain;
       image-rendering: pixelated;
     }
@@ -1246,7 +1248,7 @@
     const answerDuration = 2000;
     const answerNoticeDuration = 2000;
     const answerTextDuration = 2000;
-    const answerCheckExtraDuration = 2000;
+    const answerCheckExtraDuration = 900;
     const correctJumpInterval = 200;
     const moveSeconds = 15;
     const heartFull = "fullheart.png";
