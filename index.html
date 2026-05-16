@@ -1242,7 +1242,7 @@
         showLandingPage();
       }
 
-      await ensureFirebase(8000);
+      await ensureFirebase(30000);
 
       if (isPlayerPage) {
         setupPlayerJoin();
@@ -1258,14 +1258,12 @@
       }
 
       try {
-        await checkDatabaseUrl();
         const appModule = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
         const dbModule = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js");
         const app = appModule.getApps().length
           ? appModule.getApp()
           : appModule.initializeApp(firebaseConfig);
         const database = dbModule.getDatabase(app);
-        await dbModule.get(dbModule.ref(database, ".info/connected"));
         firebaseErrorMessage = "";
         return {
           db: database,
@@ -1282,20 +1280,6 @@
         console.error(error);
         firebaseErrorMessage = error?.message || String(error);
         return null;
-      }
-    }
-
-    async function checkDatabaseUrl() {
-      const url = `${firebaseConfig.databaseURL.replace(/\/$/, "")}/.json?shallow=true`;
-      const response = await fetch(url, { cache: "no-store" });
-
-      if (response.status === 404) {
-        throw new Error("Realtime Database가 없거나 databaseURL이 잘못되었습니다.");
-      }
-
-      if (!response.ok) {
-        const text = await response.text().catch(() => "");
-        throw new Error(`Realtime Database 응답 오류 ${response.status}${text ? `: ${text}` : ""}`);
       }
     }
 
@@ -1368,7 +1352,7 @@
     }
 
     async function setupScreen() {
-      await ensureFirebase(12000);
+      await ensureFirebase(30000);
 
       screenRoomCode.textContent = roomCode;
       const playerUrl = makePlayerUrl(roomCode);
@@ -1381,7 +1365,7 @@
       requestAnimationFrame(updateScreen);
 
       if (!firebaseReady) {
-        screenStatus.textContent = "Firebase 설정 필요";
+        screenStatus.textContent = firebaseErrorMessage || "Firebase 연결 실패";
         screenStatus.classList.add("warning");
         renderPlayerList();
         return;
