@@ -807,6 +807,11 @@
       touch-action: none;
     }
 
+    .joystick.dead {
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
     .joystick-knob {
       position: absolute;
       left: 50%;
@@ -1315,6 +1320,7 @@
     let countdownTimer = 0;
     let currentQuestion = null;
     let movementEnabled = false;
+    let localPlayerDead = false;
     let cycleDeck = [];
     let gameStarted = false;
     let pendingRoomCode = "";
@@ -1783,7 +1789,20 @@
         const player = snapshot.val();
         if (!player) return;
         livePreviewName.textContent = player.nickname || nickname;
-        renderHearts(livePreviewHearts, Number(player.lives ?? maxLives));
+        const lives = Number(player.lives ?? maxLives);
+        renderHearts(livePreviewHearts, lives);
+        const wasDead = localPlayerDead;
+        localPlayerDead = lives === 0;
+        if (localPlayerDead && !wasDead) {
+          activePadKeys.clear();
+          heldKeyboardKeys.clear();
+          writeInput();
+          playerStatus.textContent = "탈락 💀";
+          joystick.classList.add("dead");
+        } else if (!localPlayerDead && wasDead) {
+          playerStatus.textContent = `방 ${roomCode}`;
+          joystick.classList.remove("dead");
+        }
       });
 
       setInterval(() => {
@@ -1926,6 +1945,10 @@
 
     async function writeInput() {
       if (!playerRef || !firebaseReady) return;
+      if (localPlayerDead) {
+        await firebase.update(playerRef, { keys: makeEmptyKeys() });
+        return;
+      }
       const keys = makeEmptyKeys();
       for (const key of heldKeyboardKeys) keys[key] = true;
       for (const key of activePadKeys) keys[key] = true;
@@ -1945,14 +1968,15 @@
         const player = latestPlayers[id];
         if (!player) continue;
 
-        const direction = movementEnabled ? getDirectionFromKeys(player.keys || {}) : "";
+        const isDead = Number(player.lives ?? maxLives) === 0;
+        const direction = (movementEnabled && !isDead) ? getDirectionFromKeys(player.keys || {}) : "";
         if (direction !== state.direction) {
           state.direction = direction;
           state.directionStartedAt = now;
         }
 
         const vector = movementVector(direction);
-        if (direction && movementEnabled) {
+        if (direction && movementEnabled && !isDead) {
           state.x += vector.x * speed * elapsed;
           state.y += vector.y * speed * elapsed;
         }
@@ -2034,12 +2058,13 @@
       const node = avatarNodes.get(id);
       if (!node) return;
 
-      const direction = state.direction;
-      const frame = selectFrame(direction, state.directionStartedAt, now);
-      const bob = direction
+      const isDead = Number(player.lives ?? maxLives) === 0;
+      const direction = isDead ? "" : state.direction;
+      const frame = isDead ? idleFrame : selectFrame(direction, state.directionStartedAt, now);
+      const bob = (!isDead && direction)
         ? (Math.floor((now - state.directionStartedAt) / bobDuration) % 2 === 0 ? -bobOffset : bobOffset)
         : 0;
-      const effect = getEffectOffset(state, now);
+      const effect = isDead ? { x: 0, y: 0 } : getEffectOffset(state, now);
       const color = player.color || "#ffffff";
 
       node.root.style.transform = `translate3d(${state.x + effect.x}px, ${state.y + bob + effect.y}px, 0)`;
@@ -2047,10 +2072,15 @@
       renderHearts(node.hearts, Number(player.lives ?? maxLives));
       renderSpeechBubble(node.bubble, player.message);
 
-      if (state.lastFrame !== frame || state.lastColor !== color) {
-        state.lastFrame = frame;
-        state.lastColor = color;
-        paintSprite(node.canvas, frame, color);
+      const frameKey = isDead ? "__dead__" : frame;
+      if (state.lastFrame !== frameKey || (!isDead && state.lastColor !== color)) {
+        state.lastFrame = frameKey;
+        if (isDead) {
+          paintDeadSprite(node.canvas);
+        } else {
+          state.lastColor = color;
+          paintSprite(node.canvas, frame, color);
+        }
       }
     }
 
@@ -2242,6 +2272,36 @@
         y *= Math.SQRT1_2;
       }
       return { x, y };
+    }
+
+    async function paintDeadSprite(canvas) {
+      const image = await loadImage(idleFrame);
+      const ctx = canvas.getContext("2d");
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      // Gray-tint white pixels
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const d = imageData.data;
+      for (let i = 0; i < d.length; i += 4) {
+        if (d[i + 3] > 20 && d[i] > 170 && d[i + 1] > 170 && d[i + 2] > 170) {
+          d[i] = d[i + 1] = d[i + 2] = 155;
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+
+      // Draw pixel-art X eyes
+      const u = Math.ceil(canvas.width / 16);
+      ctx.fillStyle = "#111111";
+      const drawX = (cx, cy) => {
+        for (let s = -2; s <= 2; s++) {
+          ctx.fillRect(Math.round(cx + s * u), Math.round(cy + s * u), u, u);
+          ctx.fillRect(Math.round(cx + s * u), Math.round(cy - s * u), u, u);
+        }
+      };
+      drawX(Math.round(canvas.width * 0.32), Math.round(canvas.height * 0.27));
+      drawX(Math.round(canvas.width * 0.64), Math.round(canvas.height * 0.27));
     }
 
     async function paintSprite(canvas, src, color) {
